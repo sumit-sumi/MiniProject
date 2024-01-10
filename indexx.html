@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text-to-Speech & Speech-to-Text Converter</title>
+
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(rgba(255,255,255,0.5), rgba(255,255,255,0.5)),
+                        url('ss.jpg') center/cover no-repeat,
+                        url('ss.jpg') center/cover no-repeat;
+        }
+
+        #header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #header h1 {
+            color: #333;
+            display: inline-block;
+            padding: 0 20px;
+            background-color: #fff;
+        }
+
+        #header hr {
+            width: 100%;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        #container {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: rgba(255, 255, 255, 0.9);
+            max-width: 600px;
+            width: 100%;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: calc(100% - 20px);
+            height: 100px;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            resize: none;
+        }
+
+        button {
+            background-color: #4caf50;
+            color: #fff;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="range"] {
+            width: calc(100% - 20px);
+            margin-bottom: 10px;
+        }
+
+        p#outputSpeech,
+        p#outputText {
+            font-size: 18px;
+            color: #333;
+            margin: 20px 0;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="header">
+        <h1>Text-to-Speech & Speech-to-Text Converter</h1>
+        <hr>
+    </div>
+
+    <div id="container">
+        <div id="textToSpeech">
+            <h1>Text-to-Speech</h1>
+            <textarea id="inputText" placeholder="Enter text to convert"></textarea>
+
+            <label for="volume">Volume:</label>
+            <input type="range" id="volume" min="0" max="1" step="0.1" value="1">
+
+            <label for="rate">Rate:</label>
+            <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1">
+
+            <button onclick="convertToSpeech()">Convert to Speech</button>
+
+            <p id="outputSpeech"></p>
+        </div>
+
+        <div id="speechToText">
+            <h1>Speech-to-Text</h1>
+            <button onclick="startSpeechToText()">Start Recording</button>
+            <button onclick="stopSpeechToText()">Stop Recording</button>
+
+            <p id="outputText"></p>
+        </div>
+    </div>
+
+    <script>
+        let recognition;
+
+        function convertToSpeech() {
+            const inputText = document.getElementById('inputText').value;
+            const outputSpeech = document.getElementById('outputSpeech');
+            const volume = document.getElementById('volume').value;
+            const rate = document.getElementById('rate').value;
+            
+            const synth = window.speechSynthesis;
+            const utterance = new SpeechSynthesisUtterance(inputText);
+            
+            utterance.volume = parseFloat(volume);
+            utterance.rate = parseFloat(rate);
+
+            synth.speak(utterance);
+            
+            outputSpeech.textContent = inputText;
+            outputSpeech.style.opacity = 1;
+            outputSpeech.style.animation = 'fadeInUp 0.5s ease';
+        }
+
+        function startSpeechToText() {
+            recognition = new webkitSpeechRecognition() || new SpeechRecognition();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+
+            recognition.onresult = function(event) {
+                const result = event.results[event.results.length - 1];
+                const transcript = result[0].transcript;
+
+                document.getElementById('outputText').textContent = transcript;
+                document.getElementById('outputText').style.opacity = 1;
+                document.getElementById('outputText').style.animation = 'fadeInUp 0.5s ease';
+            };
+
+            recognition.start();
+        }
+
+        function stopSpeechToText() {
+            if (recognition) {
+                recognition.stop();
+            }
+        }
+    </script>
+
+</body>
+</html>
